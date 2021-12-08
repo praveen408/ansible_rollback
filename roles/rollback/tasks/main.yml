@@ -5,19 +5,13 @@
       stat:
         path: "{{ ntp_conf_backup_file }}"
       register: ntp_file_exists
-
-    - name: Fail if NTP conf backup file does not exists
-      fail:
-        msg: "{{ ntp_conf_backup_file }} does not exists!"
-      when: ntp_file_exists.stat.exists == false
-    
+      
     - name: Replace current NTP config with the backup config file
       copy:
         src: "{{ ntp_conf_backup_file }}"
         dest: /etc/ntp.conf
         remote_src: yes
       notify: "restart ntpd services"
-  when: "'ntp_remediation' in remediation_task"
 
 - name: Rollback DNS Changes
   block:
@@ -25,11 +19,6 @@
       stat:
         path: "{{ network_manager_conf_backup_file }}"
       register: network_manager_file_exists
-    
-    - name: Fail if NetworkManager conf backup file does not exists
-      fail:
-        msg: "{{ network_manager_conf_backup_file }} does not exists!"
-      when: network_manager_file_exists.stat.exists == false
     
     - name: Replace current NetworkManager conf with the backup config file
       copy:
@@ -42,16 +31,11 @@
       stat:
         path: "{{ resolv_conf_backup_file }}"
       register: dns_file_exists
-    
-    - name: Fail if resolv conf backup file does not exists
-      fail:
-        msg: "{{ resolv_conf_backup_file }} does not exists!"
-      when: dns_file_exists.stat.exists == false
-    
+  
     - name: Replace current resolv conf with the backup config file
       copy:
         src: "{{ resolv_conf_backup_file }}"
         dest: /etc/resolv.conf
         remote_src: yes
       notify: "reload NetworkManager"
-  when: "'dns_remediation' in remediation_task"
+  
